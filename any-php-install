@@ -4,7 +4,6 @@
 #  - versions.txt からインストールするバージョンとインストールパスを読んでxbuildでインストール
 #  - サービス独自のカスタム definitions は PHP_BUILD_DEFINITION_PATH に置いておく
 
-set -x
 set -e
 
 cd $( dirname $0 )
@@ -24,7 +23,9 @@ while read spec; do
     location=$2
 
     # build php
-    if [ ! -x "$location/bin/php" ]; then
+    if $location/bin/php --version 2> /dev/null | grep -q "PHP $version"; then
+        echo "php-$version on $location is already installed."
+    else
         mkdir -p "$location"
         ./xbuild/php-install $spec
     fi

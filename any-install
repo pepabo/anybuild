@@ -1,7 +1,6 @@
 #!/bin/bash
 # kuroda
 
-set -x
 set -e
 
 cd $( dirname $0 )
