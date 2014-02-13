@@ -23,7 +23,9 @@ while read spec; do
     location=$2
 
     # build perl
-    if [ ! -x "$location/bin/perl" ]; then
+    if $location/bin/perl --version 2> /dev/null | grep -q "v${version}"; then
+        echo "perl-$version on $location is already installed."
+    else
         mkdir -p "$location"
         ./xbuild/perl-install $spec
         # cpanm v1.70はcpanfileの指定がまだできない。githubから開発版をもってくる。
