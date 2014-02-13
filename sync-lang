@@ -6,23 +6,26 @@ set -e
 usage() {
     (
       echo "Usage:"
-      echo "    sync_lang --check [lang_name[/version]]"
-      echo "    sync_lang --pull|--push [--dry-run] [lang_name[/version]] "
+      echo "    sync-lang --check [lang_name[/version]]"
+      echo "    sync-lang --pull|--push [--dry-run] [lang_name[/version]] "
       echo ""
       echo "Requires:"
-      echo "    ./.role"
-      echo "    ./.lang_server"
+      echo "    /etc/anybuild/sync-lang"
+      echo "    # e.g."
+      echo "    # role=app"
+      echo "    # server=rsync.mydain.com"
     ) 1>$2
     exit 1
 }
 
-cd $( dirname $0 )
 
-role=$( cat .role )
-server=$( cat .lang_server )
+sync_config=/etc/anybuild/sync-lang
+
+# require role, server
+source $sync_config
 
 if [  -z "$server" -o  -z "$role" ]; then
-    echo 'No lang_server or role specified.' 1>&2
+    echo 'No (lang)server or role specified.' 1>&2
     exit 1
 fi
 

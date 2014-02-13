@@ -1,35 +1,38 @@
-#!/bin/sh
+#!/bin/bash
 # kuroda
 #
-#  - ./versions.txt からインストールするバージョンとインストールパスを読んでxbuildでインストール
-#  - ./cpanfileがあれば、各perlにcpanmでモジュールをインストール
-#  - /cpanfile.<インストールパスのdir名>があればそれも追加でインストール
+#  - versions.txt からインストールするバージョンとインストールパスを読んでxbuildでインストール
+#  - cpanfileがあれば、各perlにcpanmでモジュールをインストール
+#  - cpanfile.<インストールパスのdir名>があればそれも追加でインストール
 
 set -x
 set -e
 
+cd $( dirname $0 )
+
+etc=/etc/anybuild/perl
+versions=$etc/versions.txt
+
 export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
 
-cd $( dirname $0 )
-yum -y install gcc make
-test -f versions.txt || exit
+test -f $versions || exit
 
 while read spec; do
     set $(echo $spec)
     version=$1
-    install_path=$2
+    location=$2
 
     # build perl
-    if [ ! -x "$install_path/bin/perl" ]; then
-        mkdir -p "$install_path"
-        /usr/local/xbuild/bin/perl-install $spec
+    if [ ! -x "$location/bin/perl" ]; then
+        mkdir -p "$location"
+        ./xbuild/perl-install $spec
         # cpanm v1.70はcpanfileの指定がまだできない。githubから開発版をもってくる。
-        PATH="$install_path/bin:$PATH" cpanm --notest http://github.com/miyagawa/cpanminus/tarball/1.7102
+        PATH="$location/bin:$PATH" cpanm --notest http://github.com/miyagawa/cpanminus/tarball/1.7102
     fi
 
     # install modules
-    for cpanfile in "./cpanfile" "./cpanfile.$( basename $install_path )"; do
+    for cpanfile in "$etc/cpanfile" "$etc/cpanfile.$( basename $location )"; do
         test -f "$cpanfile" || continue
-        PATH="$install_path/bin:$PATH" cpanm --notest --cpanfile "$cpanfile" --installdeps ./
+        PATH="$location/bin:$PATH" cpanm --notest --cpanfile "$cpanfile" --installdeps ./
     done
-done < versions.txt
+done < $versions
