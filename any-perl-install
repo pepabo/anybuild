@@ -5,7 +5,6 @@
 #  - cpanfileがあれば、各perlにcpanmでモジュールをインストール
 #  - cpanfile.<インストールパスのdir名>があればそれも追加でインストール
 
-set -x
 set -e
 
 cd $( dirname $0 )
