@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #  - versions.txt からインストールするバージョンとインストールパスを読んでxbuildでインストール
-#  - pipfile (pip freezeで出力されるリスト)があれば、各pythonにpipでモジュールをインストール
+#  - pipfile (pip freezeで出力されるリスト) があれば、各pythonにpipでモジュールをインストール
 
 set -e
 
@@ -20,7 +20,7 @@ while read spec; do
     location=$2
 
     # build python
-    if $location/bin/python --version 2>&1 | grep -q $version; then
+    if $location/bin/python --version 2>&1 | grep -q "Python $version"; then
         echo "python-$version on $location is already installed."
     else
         mkdir -p "$location"
