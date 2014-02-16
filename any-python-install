@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+#  - versions.txt からインストールするバージョンとインストールパスを読んでxbuildでインストール
+#  - pipfile (pip freezeで出力されるリスト)があれば、各pythonにpipでモジュールをインストール
+
+set -e
+
+cd $( dirname $0 )
+
+etc=/etc/anybuild/python
+versions=$etc/versions.txt
+
+export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
+
+test -f $versions || exit
+
+while read spec; do
+    set $(echo $spec)
+    version=$1
+    location=$2
+
+    # build python
+    if $location/bin/python --version 2>&1 | grep -q "${version}"; then
+        echo "python-$version on $location is already installed."
+    else
+        mkdir -p "$location"
+        ./xbuild/python-install $spec
+    fi
+
+    # install modules
+    test -f "$etc/pipfile" && PATH="$location/bin:$PATH" pip install -r "$etc/pipfile"
+done < $versions
