@@ -14,7 +14,7 @@ usage() {
       echo "    # e.g."
       echo "    # role=app"
       echo "    # server=rsync.mydain.com"
-    ) 1>$2
+    ) 1>&2
     exit 1
 }
 
