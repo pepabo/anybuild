@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+#  - versions.txt からインストールするバージョンとインストールパスを読んでxbuildでインストール
+#  - Gemfileがあれば、各rubyにbundlerでモジュールインストール
+
+set -e
+
+cd $( dirname $0 )
+
+etc=/etc/anybuild/ruby
+versions=$etc/versions.txt
+
+export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
+
+test -f $versions || exit
+
+while read spec; do
+    set $(echo $spec)
+    version=$1
+    location=$2
+
+    # build ruby
+    if $location/bin/ruby --version 2> /dev/null | grep -q $version; then
+        echo "ruby-$version on $location is already installed."
+    else
+        mkdir -p "$location"
+        ./xbuild/ruby-install $spec
+    fi
+
+    # install modules
+    test -f "$etc/Gemfile" && BUNDLE_GEMFILE=$etc/Gemfile PATH="$location/bin:$PATH" bundle install
+done < $versions
