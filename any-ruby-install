@@ -28,5 +28,8 @@ while read spec; do
     fi
 
     # install modules
-    test -f "$etc/Gemfile" && BUNDLE_GEMFILE=$etc/Gemfile PATH="$location/bin:$PATH" bundle install
+    for gemfile in "$etc/Gemfile" "$etc/Gemfile.$( basename $location )"; do
+        test -f $gemfile || continue
+        BUNDLE_GEMFILE=$gemfile PATH="$location/bin:$PATH" bundle install
+    done
 done < $versions
