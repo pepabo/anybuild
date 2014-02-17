@@ -20,7 +20,7 @@ while read spec; do
     location=$2
 
     # build python
-    if $location/bin/python --version 2>&1 | grep -q "Python $version"; then
+    if $location/bin/python --version 2>&1 | grep -qFx "Python $version"; then
         echo "python-$version on $location is already installed."
     else
         mkdir -p "$location"
