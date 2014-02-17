@@ -64,7 +64,7 @@ do
       opt_dryrun=1
       shift
       ;;
-  --delete )
+  --delete)
       opt_delete=1
       shift
       ;;
