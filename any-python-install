@@ -28,5 +28,8 @@ while read spec; do
     fi
 
     # install modules
-    test -f "$etc/pipfile" && PATH="$location/bin:$PATH" pip install -r "$etc/pipfile"
+    for pipfile in "$etc/pipfile" "$etc/pipfile.$( basename $location )"; do
+        test -f $pipfile || continue
+        PATH="$location/bin:$PATH" pip install -r $pipfile
+    done
 done < $versions
