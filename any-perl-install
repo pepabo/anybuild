@@ -14,7 +14,7 @@ versions=$etc/versions.txt
 
 export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
 
-test -f $versions || exit
+test -f $versions || exit 0
 
 while read spec; do
     set $(echo $spec)

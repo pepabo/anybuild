@@ -15,7 +15,7 @@ export PHP_BUILD_DEFINITION_PATH=$etc/definitions/
 export LDFLAGS="-L/usr/lib64/mysql"
 export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
 
-test -f $versions || exit
+test -f $versions || exit 0
 
 while read spec; do
     set $(echo $spec)
