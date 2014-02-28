@@ -89,7 +89,7 @@ fi
 if [ -n "$opt_check" ]; then
   # 差分が無無いときのみ0で終了
   stats=$(
-    rsync -avc --delete --dry-run --max-delete 1 --stats \
+    rsync -av --delete --dry-run --max-delete 1 --stats \
       "${server}::${rsyncd_ro_module}${remote_path}/" \
       "$local_path/" |
       awk '/^(deleting|Number of files transferred:)/'
@@ -108,7 +108,7 @@ if [ -n "$opt_check" ]; then
   fi
 fi
 
-rsync_opts='-avc'
+rsync_opts='-av'
 test -n "$opt_dryrun" && rsync_opts="$rsync_opts --dry-run"
 test -n "$opt_delete" && rsync_opts="$rsync_opts --delete"
 
