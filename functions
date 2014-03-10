@@ -1,0 +1,41 @@
+installer=$(basename $0)
+lang=$(echo "$installer" | sed -e 's/any-\([a-z]*\)-install/\1/')
+etc="/etc/anybuild/$lang"
+versions=$etc/versions.txt
+env=$etc/env
+
+export MAKEFLAGS="-j $(getconf _NPROCESSORS_ONLN)"
+test -f $env && source $env
+
+install_or_update_xbuild() {
+    (
+    pushd $(dirname $0)
+
+    if [ ! -d ./xbuild ]; then
+        git clone https://github.com/tagomoris/xbuild.git xbuild
+    else
+        pushd xbuild
+        git pull
+        popd
+    fi
+
+    popd
+    ) > /dev/null
+}
+
+install_versions() {
+    if [ ! -f $versions ]; then
+        echo 'No versions are defined.' 1>&2
+        return 0
+    fi
+
+    while read SPEC; do
+        export SPEC
+        set $(echo $SPEC)
+        export TARGET_VERSION=$1
+        export LOCATION=$2
+        export ETC=$etc
+        mkdir -p "$LOCATION"
+        install_ll
+    done < $versions
+}
