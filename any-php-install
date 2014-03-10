@@ -10,10 +10,11 @@ cd $( dirname $0 )
 
 etc=/etc/anybuild/php
 versions=$etc/versions.txt
-export PHP_BUILD_DEFINITION_PATH=$etc/definitions/
+env=$etc/env
 
-export LDFLAGS="-L/usr/lib64/mysql"
+export PHP_BUILD_DEFINITION_PATH=$etc/definitions/
 export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
+test -f $env && source $env
 
 test -f $versions || exit 0
 

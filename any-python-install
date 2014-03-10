@@ -9,8 +9,10 @@ cd $( dirname $0 )
 
 etc=/etc/anybuild/python
 versions=$etc/versions.txt
+env=$etc/env
 
 export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
+test -f $env && source $env
 
 test -f $versions || exit 0
 
