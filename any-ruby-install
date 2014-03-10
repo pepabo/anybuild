@@ -18,15 +18,10 @@ while read spec; do
     set $(echo $spec)
     version=$1
     location=$2
-    expected_version=${version/-}
 
     # build ruby
-    if $location/bin/ruby --version 2> /dev/null | grep -qF "^ruby $expected_version"; then
-        echo "ruby-$version on $location is already installed."
-    else
-        mkdir -p "$location"
-        ./xbuild/ruby-install $spec
-    fi
+    mkdir -p "$location"
+    ./xbuild/ruby-install $spec
 
     # install modules
     for gemfile in "$etc/Gemfile" "$etc/Gemfile.$( basename $location )"; do

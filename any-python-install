@@ -20,12 +20,8 @@ while read spec; do
     location=$2
 
     # build python
-    if $location/bin/python --version 2>&1 | grep -qFx "Python $version"; then
-        echo "python-$version on $location is already installed."
-    else
-        mkdir -p "$location"
-        ./xbuild/python-install $spec
-    fi
+    mkdir -p "$location"
+    ./xbuild/python-install $spec
 
     # install modules
     for pipfile in "$etc/pipfile" "$etc/pipfile.$( basename $location )"; do

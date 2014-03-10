@@ -21,11 +21,15 @@ while read spec; do
     set $(echo $spec)
     version=$1
     location=$2
+
+    # default definitionを使わず、
+    # /etc/anybuild/php/definitions/<php_version>-<release_name>
+    # で管理するの仕様にしているので、-*を取り除いてバージョンチェックする。
     expected_version=${version%%-*}
 
     # build php
     if $location/bin/php --version 2> /dev/null | grep -q "PHP $expected_version "; then
-        echo "php-$version on $location is already installed."
+        echo "php $version is already installed on $location"
     else
         mkdir -p "$location"
         ./xbuild/php-install $spec
