@@ -12,7 +12,7 @@ if [ ! -d ./xbuild ]; then
     git clone https://github.com/tagomoris/xbuild.git xbuild
 else
     pushd xbuild
-    git update
+    git pull
     popd
 fi
 
