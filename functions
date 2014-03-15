@@ -15,6 +15,7 @@ install_or_update_xbuild() {
         git clone https://github.com/tagomoris/xbuild.git xbuild
     else
         pushd xbuild
+        git checkout master
         git pull
         popd
     fi
