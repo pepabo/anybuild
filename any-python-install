@@ -1,31 +1,17 @@
 #!/bin/bash
-#
-#  - versions.txt からインストールするバージョンとインストールパスを読んでxbuildでインストール
-#  - pipfile (pip freezeで出力されるリスト) があれば、各pythonにpipでモジュールをインストール
 
 set -e
 
-cd $( dirname $0 )
+install_ll() {
+    ./xbuild/python-install $SPEC
 
-etc=/etc/anybuild/python
-versions=$etc/versions.txt
-
-export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
-
-test -f $versions || exit 0
-
-while read spec; do
-    set $(echo $spec)
-    version=$1
-    location=$2
-
-    # build python
-    mkdir -p "$location"
-    ./xbuild/python-install $spec
-
-    # install modules
-    for pipfile in "$etc/pipfile" "$etc/pipfile.$( basename $location )"; do
+    for pipfile in "$ETC/pipfile" "$ETC/pipfile.$( basename $LOCATION )"; do
         test -f $pipfile || continue
-        PATH="$location/bin:$PATH" pip install -r $pipfile
+        PATH="$LOCATION/bin:$PATH" pip install -r $pipfile
     done
-done < $versions
+}
+
+cd $(dirname $0)
+source ./functions
+install_or_update_xbuild
+install_versions

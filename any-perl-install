@@ -1,35 +1,20 @@
 #!/bin/bash
-# kuroda
-#
-#  - versions.txt からインストールするバージョンとインストールパスを読んでxbuildでインストール
-#  - cpanfileがあれば、各perlにcpanmでモジュールをインストール
-#  - cpanfile.<インストールパスのdir名>があればそれも追加でインストール
 
 set -e
 
-cd $( dirname $0 )
-
-etc=/etc/anybuild/perl
-versions=$etc/versions.txt
-
-export MAKEFLAGS="-j $( getconf _NPROCESSORS_ONLN )"
-
-test -f $versions || exit 0
-
-while read spec; do
-    set $(echo $spec)
-    version=$1
-    location=$2
-
-    # build perl
-    mkdir -p "$location"
-    ./xbuild/perl-install $spec
+install_ll() {
+    ./xbuild/perl-install $SPEC
     # cpanm v1.70はcpanfileの指定がまだできない。githubから開発版をもってくる。
-    PATH="$location/bin:$PATH" cpanm --notest http://github.com/miyagawa/cpanminus/tarball/1.7102
+    PATH="$LOCATION/bin:$PATH" cpanm --notest http://github.com/miyagawa/cpanminus/tarball/1.7102
 
     # install modules
-    for cpanfile in "$etc/cpanfile" "$etc/cpanfile.$( basename $location )"; do
+    for cpanfile in "$ETC/cpanfile" "$ETC/cpanfile.$( basename $LOCATION )"; do
         test -f "$cpanfile" || continue
-        PATH="$location/bin:$PATH" cpanm --notest --cpanfile "$cpanfile" --installdeps ./
+        PATH="$LOCATION/bin:$PATH" cpanm --notest --cpanfile "$cpanfile" --installdeps ./
     done
-done < $versions
+}
+
+cd $(dirname $0)
+source ./functions
+install_or_update_xbuild
+install_versions

@@ -1,20 +1,11 @@
 #!/bin/bash
-# kuroda
 
 set -e
 
-cd $( dirname $0 )
+cd $(dirname $0)
 
 sync_config=/etc/anybuild/sync-lang
 test -f $sync_config && source $sync_config
-
-if [ ! -d ./xbuild ]; then
-    git clone https://github.com/tagomoris/xbuild.git xbuild
-else
-    pushd xbuild
-    git pull
-    popd
-fi
 
 if [ -n "$server" ]; then
     echo "$server からビルド済みデータを取得..."
