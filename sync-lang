@@ -18,14 +18,13 @@ usage() {
     exit 1
 }
 
-
 sync_config=/etc/anybuild/sync-lang
 
-# require role, server
 source $sync_config
+: ${role:=generic}
 
-if [  -z "$server" -o  -z "$role" ]; then
-    echo 'No (lang)server or role specified.' 1>&2
+if [  -z "$server" ]; then
+    echo 'No (lang)server specified.' 1>&2
     usage
 fi
 
