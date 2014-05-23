@@ -107,7 +107,7 @@ if [ -n "$opt_check" ]; then
   fi
 fi
 
-rsync_opts='-av'
+rsync_opts='-avz'
 test -n "$opt_dryrun" && rsync_opts="$rsync_opts --dry-run"
 test -n "$opt_delete" && rsync_opts="$rsync_opts --delete"
 
