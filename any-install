@@ -2,21 +2,22 @@
 
 set -e
 
+sync_config=/etc/anybuild/sync-lang
+
 cd $(dirname $0)
 
-sync_config=/etc/anybuild/sync-lang
 test -f $sync_config && source $sync_config
 
-if [ -n "$server" ]; then
-    echo "$server からビルド済みデータを取得..."
-    ./sync-lang --pull --delete
+if [ -n "$SERVER" ]; then
+    echo "Pulling built lang from ${SERVER}..."
+    ./sync-lang pull --delete
 fi
 
 for installer in $( ls any-*-install ); do
     ./$installer
 done
 
-if [ -n "$server" ]; then
-    echo "ビルドしたものを $server に同期..."
-    ./sync-lang --push
+if [ -n "$SERVER" ]; then
+    echo "Pushing incremental built lang to ${SERVER}..."
+    ./sync-lang push
 fi
