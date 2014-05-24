@@ -107,23 +107,23 @@ if [ -x "$(which facter)" ]; then
     exit 1
 fi
 
-## Defaults
-: ${ROLE:='generic'}
-: ${OS:=$(facter operatingsystem)}
-: ${OS_RELEASE:=$(facter operatingsystemrelease | sed 's/\.[0-9]$//')}
-: ${ARCH:=$(facter architecture)}
-: ${LANG_PATH:='/usr/local/lang'}
-
 if [  -z "$SERVER" ]; then
     echo 'No (lang)SERVER specified.' 1>&2
     _usage
 fi
 
-RSYNCD_RO_MODULE='lang_ro'
-RSYNCD_RW_MODULE='lang_rw'
+## Defaults
+: ${ROLE:='generic'}
+: ${LANG_PATH:='/usr/local/lang'}
+: ${OS:=$(facter operatingsystem)}
+: ${OS_RELEASE:=$(facter operatingsystemrelease | sed 's/\.[0-9]$//')}
+
+ARCH=$(facter architecture)
 LOCAL_PATH="$LANG_PATH"
 REMOTE_PATH="/${ROLE}/${OS}/${OS_RELEASE}/${ARCH}"
 
+RSYNCD_RO_MODULE='lang_ro'
+RSYNCD_RW_MODULE='lang_rw'
 
 if [ -n "$rel_path" -a "$rel_path" != "/" ]; then
   LOCAL_PATH="${LOCAL_PATH}/${rel_path}"
