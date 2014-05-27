@@ -102,7 +102,7 @@ if [ -f "$config" ]; then
     source "$config"
 fi
 
-if [ -x "$(which facter)" ]; then
+if [ ! -x "$(which facter)" ]; then
     echo "This script requires facter command." 1>&2
     exit 1
 fi
