@@ -9,15 +9,16 @@ cd $(dirname $0)
 test -f $sync_config && source $sync_config
 
 if [ -n "$LANG_SERVER" ]; then
-    echo "Pulling built lang from ${LANG_SERVER}..."
+    echo "Pulling built lang from ${LANG_SERVER} ..."
     ./sync-lang pull --delete
 fi
 
 for installer in $( ls any-*-install ); do
+    echo -e "\nRunging $installer ..."
     ./$installer
 done
 
 if [ -n "$LANG_SERVER" ]; then
-    echo "Pushing incremental built lang to ${LANG_SERVER}..."
+    echo -e "\nPushing incremental built lang to ${LANG_SERVER} ..."
     ./sync-lang push
 fi

@@ -108,7 +108,7 @@ if [ ! -x "$(which facter)" ]; then
 fi
 
 if [  -z "$LANG_SERVER" ]; then
-    echo 'No (lang)LANG_SERVER specified.' 1>&2
+    echo 'No LANG_SERVER specified.' 1>&2
     exit 1
 fi
 
