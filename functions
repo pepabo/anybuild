@@ -15,7 +15,9 @@ install_or_update_xbuild() {
         git clone https://github.com/tagomoris/xbuild.git xbuild
     else
         pushd xbuild
-        git checkout master
+        if [ "$(git symbolic-ref HEAD)" !=  "refs/heads/master" ]; then
+            git checkout master
+        fi
         git pull
         popd
     fi
