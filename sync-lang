@@ -29,7 +29,7 @@ _check() {
 
     stats=$(
       rsync $rsync_opts \
-        "${SERVER}::${RSYNCD_RO_MODULE}${REMOTE_PATH}/" "${LOCAL_PATH}/" |
+        "${LANG_SERVER}::${RSYNCD_RO_MODULE}${REMOTE_PATH}/" "${LOCAL_PATH}/" |
         awk '/^(deleting|Number of files transferred:)/'
     )
 
@@ -54,7 +54,7 @@ _pull() {
 
     set -x
     mkdir -p "$LOCAL_PATH"
-    rsync $rsync_opts "${SERVER}::${RSYNCD_RO_MODULE}${REMOTE_PATH}/" "${LOCAL_PATH}/"
+    rsync $rsync_opts "${LANG_SERVER}::${RSYNCD_RO_MODULE}${REMOTE_PATH}/" "${LOCAL_PATH}/"
 }
 
 _push() {
@@ -64,7 +64,7 @@ _push() {
     test -n "$OPT_DELETE" && rsync_opts="$rsync_opts --delete"
 
     set -x
-    rsync $rsync_opts "${LOCAL_PATH}/" "${SERVER}::${RSYNCD_RW_MODULE}${REMOTE_PATH}/"
+    rsync $rsync_opts "${LOCAL_PATH}/" "${LANG_SERVER}::${RSYNCD_RW_MODULE}${REMOTE_PATH}/"
 }
 
 ## main ------------------------
@@ -107,8 +107,8 @@ if [ -x "$(which facter)" ]; then
     exit 1
 fi
 
-if [  -z "$SERVER" ]; then
-    echo 'No (lang)SERVER specified.' 1>&2
+if [  -z "$LANG_SERVER" ]; then
+    echo 'No (lang)LANG_SERVER specified.' 1>&2
     exit 1
 fi
 
