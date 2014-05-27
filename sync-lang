@@ -12,7 +12,7 @@ _usage() {
       echo "    sync-lang pull|push [--dry-run] [lang_name[/version]] "
       echo ""
       echo "Options:"
-      echo "    --dryrun|-d"
+      echo "    --dryrun|-n"
       echo "    --delete"
       echo "    --debug"
     ) 1>&2
@@ -109,7 +109,7 @@ fi
 
 if [  -z "$SERVER" ]; then
     echo 'No (lang)SERVER specified.' 1>&2
-    _usage
+    exit 1
 fi
 
 ## Defaults
