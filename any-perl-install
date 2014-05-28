@@ -5,7 +5,9 @@ set -e
 install_ll() {
     ./xbuild/perl-install $SPEC
     # cpanm v1.70はcpanfileの指定がまだできない。githubから開発版をもってくる。
-    PATH="$LOCATION/bin:$PATH" cpanm --notest http://github.com/miyagawa/cpanminus/tarball/1.7102
+    if [[ "$(PATH=$LOCATION/bin:$PATH cpanm -V)" =~ "version 1.70"  ]]; then
+        PATH="$LOCATION/bin:$PATH" cpanm --notest http://github.com/miyagawa/cpanminus/tarball/1.7102
+    fi
 
     # install modules
     for cpanfile in "$ETC/cpanfile" "$ETC/cpanfile.$( basename $LOCATION )"; do

@@ -3,123 +3,131 @@
 
 set -e
 
-usage() {
+config=/etc/anybuild/sync-lang
+
+_usage() {
     (
       echo "Usage:"
-      echo "    sync-lang --check [lang_name[/version]]"
-      echo "    sync-lang --pull|--push [--dry-run] [lang_name[/version]] "
+      echo "    sync-lang check [lang_name[/version]]"
+      echo "    sync-lang pull|push [--dry-run] [lang_name[/version]] "
       echo ""
-      echo "Requires:"
-      echo "    /etc/anybuild/sync-lang"
-      echo "    # e.g."
-      echo "    # role=app"
-      echo "    # server=rsync.mydain.com"
+      echo "Options:"
+      echo "    --dryrun|-n"
+      echo "    --delete"
+      echo "    --debug"
     ) 1>&2
     exit 1
 }
 
-sync_config=/etc/anybuild/sync-lang
+_help() {
+    _usage
+}
 
-source $sync_config
-: ${role:=generic}
+# 差分が無いときのみ0で終了
+_check() {
+    rsync_opts='-av --delete --dry-run --max-delete 1 --stats'
 
-if [  -z "$server" ]; then
-    echo 'No (lang)server specified.' 1>&2
-    usage
+    stats=$(
+      rsync $rsync_opts \
+        "${LANG_SERVER}::${RSYNCD_RO_MODULE}${REMOTE_PATH}/" "${LOCAL_PATH}/" |
+        awk '/^(deleting|Number of files transferred:)/'
+    )
+
+    test -z "$stats" && exit 2
+
+    [[ "$stats" =~ 'deleting' ]] && exit 1
+
+    diff_cnt=$( echo $stats | awk '/Number of files transferred:/{ print $NF }' )
+
+    if [ $diff_cnt -eq 0 ]; then
+        exit 0
+    else
+        exit 1
+    fi
+}
+
+_pull() {
+    rsync_opts='-avz'
+
+    test -n "$OPT_DRYRUN" && rsync_opts="$rsync_opts --dry-run"
+    test -n "$OPT_DELETE" && rsync_opts="$rsync_opts --delete"
+
+    set -x
+    mkdir -p "$LOCAL_PATH"
+    rsync $rsync_opts "${LANG_SERVER}::${RSYNCD_RO_MODULE}${REMOTE_PATH}/" "${LOCAL_PATH}/"
+}
+
+_push() {
+    rsync_opts='-avz'
+
+    test -n "$OPT_DRYRUN" && rsync_opts="$rsync_opts --dry-run"
+    test -n "$OPT_DELETE" && rsync_opts="$rsync_opts --delete"
+
+    set -x
+    rsync $rsync_opts "${LOCAL_PATH}/" "${LANG_SERVER}::${RSYNCD_RW_MODULE}${REMOTE_PATH}/"
+}
+
+## main ------------------------
+subcommand="_${1}"
+
+if [[ ! "$(type $subcommand 2> /dev/null)" =~ 'is a function' ]]; then
+    _usage
+else
+    shift
 fi
 
-rsyncd_ro_module='lang_ro'
-rsyncd_rw_module='lang_rw'
-
-arch=$( facter architecture )
-os=$( facter operatingsystem )
-release=$( facter operatingsystemrelease )
-release=${release%.?}
-
-local_path='/usr/local/lang'
-remote_path="/$role/$os/$release/$arch"
-
-# Options
-GETOPT=$(getopt -o h,d --long check,pull,push,dry-run,delete -- "$@")
-[ $? != 0 ] && usage
-eval set -- "$GETOPT"
-
-while true
-do
-  case $1 in
-  --check)
-      opt_check=1
-      shift
-      ;;
-  --pull)
-      opt_pull=1
-      shift
-      ;;
-  --push)
-      opt_push=1
-      shift
-      ;;
-  --dry-run | -d)
-      opt_dryrun=1
-      shift
-      ;;
-  --delete)
-      opt_delete=1
-      shift
-      ;;
-  -h)
-      usage
-      ;;
-  --)
-      shift
-      break
-      ;;
-  *)
-      usage
-      ;;
-  esac
+while [[ "$1" =~ ^- ]]; do
+    case $1 in
+        --debug)
+            set -x
+        ;;
+        --dry-run|-n)
+            OPT_DRYRUN=1
+        ;;
+        --delete)
+            OPT_DELETE=1
+        ;;
+        *)
+            _usage
+        ;;
+    esac
+    shift
 done
 
-if [ -n "$1" -a "$1" != "/" ]; then
-  local_path="$local_path/$1"
-  remote_path="$remote_path/$1"
+rel_path="$1"
+# strip slashes
+rel_path="$(echo "$rel_path" | sed -e 's|^/*||' -e 's|/*$||')"
+
+if [ -f "$config" ]; then
+    source "$config"
 fi
 
-if [ -n "$opt_check" ]; then
-  # 差分が無無いときのみ0で終了
-  stats=$(
-    rsync -av --delete --dry-run --max-delete 1 --stats \
-      "${server}::${rsyncd_ro_module}${remote_path}/" \
-      "$local_path/" |
-      awk '/^(deleting|Number of files transferred:)/'
-  )
-
-  test -z "$stats" && exit 2
-
-  echo "$stats" | grep -q 'deleting' && exit 1
-
-  diff_cnt=$( echo $stats | awk '/Number of files transferred:/{ print $NF }' )
-
-  if [ $diff_cnt -eq 0 ]; then
-      exit 0
-  else
-      exit 1
-  fi
+if [ ! -x "$(which facter)" ]; then
+    echo "This script requires facter command." 1>&2
+    exit 1
 fi
 
-rsync_opts='-avz'
-test -n "$opt_dryrun" && rsync_opts="$rsync_opts --dry-run"
-test -n "$opt_delete" && rsync_opts="$rsync_opts --delete"
-
-if [ -n "$opt_pull" ]; then
-  set -x
-  mkdir -p "$local_path"
-  rsync $rsync_opts "${server}::${rsyncd_ro_module}${remote_path}/" "$local_path/"
+if [  -z "$LANG_SERVER" ]; then
+    echo 'No LANG_SERVER specified.' 1>&2
+    exit 1
 fi
 
-if [ -n "$opt_push" ]; then
-  set -x
-  rsync $rsync_opts "$local_path/" "${server}::${rsyncd_rw_module}${remote_path}/"
+## Defaults
+: ${ROLE:='generic'}
+: ${LANG_PATH:='/usr/local/lang'}
+: ${OS:=$(facter operatingsystem)}
+: ${OS_RELEASE:=$(facter operatingsystemrelease | sed 's/\.[0-9]$//')}
+
+ARCH=$(facter architecture)
+LOCAL_PATH="$LANG_PATH"
+REMOTE_PATH="/${ROLE}/${OS}/${OS_RELEASE}/${ARCH}"
+
+RSYNCD_RO_MODULE='lang_ro'
+RSYNCD_RW_MODULE='lang_rw'
+
+if [ -n "$rel_path" -a "$rel_path" != "/" ]; then
+  LOCAL_PATH="${LOCAL_PATH}/${rel_path}"
+  REMOTE_PATH="${REMOTE_PATH}/${rel_path}"
 fi
 
-
+$subcommand
