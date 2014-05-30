@@ -26,7 +26,7 @@ install_ll() {
     done
 
     # install pecl modules
-    for peclfile in "./peclfile" "./peclfile.$( basename $LOCATION )"; do
+    for peclfile in "$ETC/peclfile" "$ETC/peclfile.$( basename $LOCATION )"; do
         test -f "$peclfile" || continue
         for module in $( grep -v '#' $peclfile ); do
             $LOCATION/bin/pecl list $module 1>/dev/null || sudo $LOCATION/bin/pecl install $module
